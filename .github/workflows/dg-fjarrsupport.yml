@@ -258,9 +258,10 @@ jobs:
               dmg-args: "--app-drop-link 400 170",
             }
         job:
+          # macos-14 fick ingen ledig maskin 2026-10-21 ("not acquired by Runner"); macos-15 är också arm64.
           - {
               target: aarch64-apple-darwin,
-              os: macos-14,
+              os: macos-15,
               arch: arm64,
               extra-build-args: "--screencapturekit",
             }
