@@ -26,7 +26,7 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 | `flutter/assets/icon.*`, `res/icon.ico`, `res/tray-icon.ico`, `flutter/windows/runner/resources/app_icon.ico` | DG-ikonen |
 | `flutter/windows/runner/Runner.rc`, `libs/portable/Cargo.toml` | Namn och utgivare i Windows filinformation |
 | `flutter/macos/Runner/AppIcon.icns` | DG-ikonen för Mac |
-| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger båda varianterna. Windows x64 blir `DG-Fjarrsupport.exe` och `DG-Fjarrsupport-Tekniker.exe`, som publiceras som release när versionen är ny. Mac blir dmg-filer för Apple Silicon och Intel, osignerade, som bara artefakter. Mac-appen får eget bundle-id och URL-schema per variant |
+| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger båda varianterna. Windows x64 blir `DG-Fjarrsupport.exe` och `DG-Fjarrsupport-Tekniker.exe`, som publiceras som release när versionen är ny. Mac blir dmg-filer för Apple Silicon och Intel, osignerade (ad hoc), som också ingår i releasen från `v1.5.0-dg3`. Mac-appen får eget bundle-id och URL-schema per variant |
 | `.github/workflows/` | RustDesks egna byggen som startar automatiskt är borttagna i den här grenen |
 
 Appnamnen är `DG-Fjarrsupport` och `DG-Fjarrsupport-Tekniker` utan mellanslag och å, ä, ö. RustDesk använder appnamnet i

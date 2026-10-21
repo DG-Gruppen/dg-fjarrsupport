@@ -3,11 +3,11 @@
 # obevakad åtkomst (res/custom-client-server.json, bara Windows). Windows (x64) blir en enda
 # exe-fil per variant och Mac (Apple Silicon och Intel) en dmg-fil per variant.
 # Stegen är tagna från jobben build-for-windows-flutter och build-for-macOS i
-# flutter-build.yml. Mac-versionerna är ännu osignerade och blir bara artefakter.
+# flutter-build.yml. Mac-versionerna är ännu osignerade (ad hoc) och ingår i releasen.
 name: DG Fjärrsupport
 
 # Varje push till grenen bygger artefakter. Är versionen i res/dg-version ny, det vill säga
-# taggen v<version> finns inte, publiceras Windows-filerna också som release.
+# taggen v<version> finns inte, publiceras exe- och dmg-filerna också som release.
 on:
   workflow_dispatch:
   push:
@@ -189,7 +189,7 @@ jobs:
           path: ./output/${{ matrix.variant.output }}
 
   release:
-    needs: [windows]
+    needs: [windows, macos]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
@@ -217,6 +217,14 @@ jobs:
           path: ./output
           merge-multiple: true
 
+      - name: Download Mac builds
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: dg-fjarrsupport-*-macos-*
+          path: ./output
+          merge-multiple: true
+
       - name: Publish release
         if: ${{ steps.version.outputs.publish == 'true' }}
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
@@ -225,14 +233,20 @@ jobs:
           name: DG Fjärrsupport ${{ steps.version.outputs.tag }}
           target_commitish: ${{ github.sha }}
           body: |
-            DG Fjärrsupport för Windows, byggd från RustDesk 1.5.0 med DG Gruppens inställningar.
+            DG Fjärrsupport för Windows och Mac, byggd från RustDesk 1.5.0 med DG Gruppens inställningar.
 
             - `DG-Fjarrsupport.exe`: kundklienten. Den installeras inte.
             - `DG-Fjarrsupport-Tekniker.exe`: teknikerklienten. Installeras med knappen i appen, och teknikern loggar in med sitt helpdeskkonto.
             - `DG-Fjarrsupport-Server.exe`: serverversionen för obevakad åtkomst. Installeras som tjänst, till exempel med `--silent-install`, och får sitt lösenord med `--password`.
+            - `DG-Fjarrsupport-macos-arm64.dmg` och `DG-Fjarrsupport-macos-x64.dmg`: kundklienten för Mac med Apple-chip respektive Intel.
+            - `DG-Fjarrsupport-Tekniker-macos-arm64.dmg` och `DG-Fjarrsupport-Tekniker-macos-x64.dmg`: teknikerklienten för Mac.
+
+            Mac-filerna är inte signerade av Apple. Första gången stoppar Mac appen, och den tillåts under Systeminställningar → Integritet och säkerhet → Öppna ändå.
 
             Källkoden för den här versionen finns i taggen ${{ steps.version.outputs.tag }}.
-          files: ./output/*.exe
+          files: |
+            ./output/*.exe
+            ./output/*.dmg
 
   macos:
     needs: [generate-bridge]
