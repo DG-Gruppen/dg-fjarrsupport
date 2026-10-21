@@ -17,7 +17,8 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 | `flutter/assets/logo.png`, `logo_dark.png` | Loggan DG Fjärrsupport i appens fönster, för ljust och mörkt tema |
 | `flutter/assets/icon.*`, `res/icon.ico`, `res/tray-icon.ico`, `flutter/windows/runner/resources/app_icon.ico` | DG-ikonen |
 | `flutter/windows/runner/Runner.rc`, `libs/portable/Cargo.toml` | Namn och utgivare i Windows filinformation |
-| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger `DG-Fjarrsupport.exe` för Windows x64 och publicerar den som release när versionen är ny |
+| `flutter/macos/Runner/AppIcon.icns` | DG-ikonen för Mac |
+| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger `DG-Fjarrsupport.exe` för Windows x64 och publicerar den som release när versionen är ny. Bygger också `DG-Fjarrsupport-macos-arm64.dmg` och `-x64.dmg` som artefakter, osignerade och med appen `DG-Fjarrsupport.app` |
 | `.github/workflows/` | RustDesks egna byggen som startar automatiskt är borttagna i den här grenen |
 
 Appnamnet är `DG-Fjarrsupport` utan mellanslag och å, ä, ö. RustDesk använder appnamnet i
