@@ -1,0 +1,15 @@
+{
+  "app-name": "DG-Fjarrsupport",
+  "conn-type": "incoming",
+  "disable-installation": "Y",
+  "disable-settings": "Y",
+  "disable-ab": "Y",
+  "disable-account": "Y",
+  "override-settings": {
+    "custom-rendezvous-server": "rustdesk.dggruppen.se",
+    "relay-server": "rustdesk.dggruppen.se",
+    "key": "u8OHqf8xnAMsLfPVkPzBWWFMHHzE0pBvp6Mzf7pOAZ0=",
+    "api-server": "https://helpdesk.dggruppen.se/rustdesk",
+    "verification-method": "use-temporary-password"
+  }
+}
