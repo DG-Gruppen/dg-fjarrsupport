@@ -1,6 +1,7 @@
-# Bygger DG Fjärrsupport i två varianter: kundklienten (res/custom-client.json) och den
-# installerbara teknikerklienten (res/custom-client-tekniker.json). Windows (x64) blir en
-# enda exe-fil per variant och Mac (Apple Silicon och Intel) en dmg-fil per variant.
+# Bygger DG Fjärrsupport i tre varianter: kundklienten (res/custom-client.json), den
+# installerbara teknikerklienten (res/custom-client-tekniker.json) och serverversionen för
+# obevakad åtkomst (res/custom-client-server.json, bara Windows). Windows (x64) blir en enda
+# exe-fil per variant och Mac (Apple Silicon och Intel) en dmg-fil per variant.
 # Stegen är tagna från jobben build-for-windows-flutter och build-for-macOS i
 # flutter-build.yml. Mac-versionerna är ännu osignerade och blir bara artefakter.
 name: DG Fjärrsupport
@@ -52,6 +53,11 @@ jobs:
               app-exe: dg-fjarrsupport-tekniker.exe,
               output: DG-Fjarrsupport-Tekniker.exe,
             }
+          - {
+              name: server,
+              app-exe: dg-fjarrsupport-server.exe,
+              output: DG-Fjarrsupport-Server.exe,
+            }
     steps:
       - name: Export GitHub Actions cache environment variables
         uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6
@@ -74,10 +80,12 @@ jobs:
       - name: Select variant
         shell: bash
         run: |
-          if [ "${{ matrix.variant.name }}" = "tekniker" ]; then
-            cp res/custom-client-tekniker.json res/custom-client.json
-            sed -i -e 's/DG Fjärrsupport/DG Fjärrsupport Tekniker/g' -e 's/"dg-fjarrsupport"/"dg-fjarrsupport-tekniker"/' -e 's/dg-fjarrsupport\.exe/dg-fjarrsupport-tekniker.exe/' flutter/windows/runner/Runner.rc
-            sed -i -e 's/DG Fjärrsupport/DG Fjärrsupport Tekniker/g' -e 's/DG-Fjarrsupport\.exe/DG-Fjarrsupport-Tekniker.exe/' libs/portable/Cargo.toml
+          variant="${{ matrix.variant.name }}"
+          if [ "$variant" != "kund" ]; then
+            product="DG Fjärrsupport ${variant^}"
+            cp "res/custom-client-$variant.json" res/custom-client.json
+            sed -i -e "s/DG Fjärrsupport/$product/g" -e "s/\"dg-fjarrsupport\"/\"dg-fjarrsupport-$variant\"/" -e "s/dg-fjarrsupport\\.exe/${{ matrix.variant.app-exe }}/" flutter/windows/runner/Runner.rc
+            sed -i -e "s/DG Fjärrsupport/$product/g" -e "s/DG-Fjarrsupport\\.exe/${{ matrix.variant.output }}/" libs/portable/Cargo.toml
           fi
           grep -n '"app-name"' res/custom-client.json
           grep -n 'ProductName\|OriginalFilename' flutter/windows/runner/Runner.rc libs/portable/Cargo.toml
@@ -221,6 +229,7 @@ jobs:
 
             - `DG-Fjarrsupport.exe`: kundklienten. Den installeras inte.
             - `DG-Fjarrsupport-Tekniker.exe`: teknikerklienten. Installeras med knappen i appen, och teknikern loggar in med sitt helpdeskkonto.
+            - `DG-Fjarrsupport-Server.exe`: serverversionen för obevakad åtkomst. Installeras som tjänst, till exempel med `--silent-install`, och får sitt lösenord med `--password`.
 
             Källkoden för den här versionen finns i taggen ${{ steps.version.outputs.tag }}.
           files: ./output/*.exe

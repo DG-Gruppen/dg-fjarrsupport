@@ -1,0 +1,19 @@
+{
+  "app-name": "DG-Fjarrsupport-Server",
+  "conn-type": "incoming",
+  "disable-settings": "Y",
+  "disable-ab": "Y",
+  "disable-account": "Y",
+  "override-settings": {
+    "custom-rendezvous-server": "rustdesk.dggruppen.se",
+    "relay-server": "rustdesk.dggruppen.se",
+    "key": "u8OHqf8xnAMsLfPVkPzBWWFMHHzE0pBvp6Mzf7pOAZ0=",
+    "api-server": "https://helpdesk.dggruppen.se/rustdesk",
+    "verification-method": "use-permanent-password",
+    "approve-mode": "password",
+    "hide-powered-by-me": "Y",
+    "preset-device-group-name": "Servrar",
+    "allow-command-line-settings-when-settings-disabled": "Y",
+    "disable-change-id": "Y"
+  }
+}

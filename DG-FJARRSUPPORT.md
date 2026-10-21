@@ -1,12 +1,13 @@
 # DG Fjärrsupport
 
 Det här är DG Gruppens version av [RustDesk](https://github.com/rustdesk/rustdesk). Den heter
-DG Fjärrsupport och används när DG:s tekniker hjälper kunder via fjärrstyrning. Den byggs i två
+DG Fjärrsupport och används när DG:s tekniker hjälper kunder via fjärrstyrning. Den byggs i tre
 varianter:
 
 | Variant | Fil | Vem | Beskrivning |
 |---|---|---|---|
 | Kundklient | `DG-Fjarrsupport.exe` | Kunden | Laddas ner från kundportalen (`https://helpdesk.dggruppen.se/portal/fjarrsupport`). Kunden startar den och läser upp ID och lösenord för teknikern. Ingenting installeras |
+| Server | `DG-Fjarrsupport-Server.exe` | Servrar och värdade datorer | Obevakad åtkomst. Installeras som tjänst och tar emot anslutningar med ett fast lösenord, utan att någon behöver godkänna. Registrerar sig i helpdesken som server och syns för alla inloggade tekniker i adressboken "Servrar". Bara Windows |
 | Teknikerklient | `DG-Fjarrsupport-Tekniker.exe` | DG:s tekniker | Installeras med knappen i appen. Teknikern loggar in med sitt helpdeskkonto och kan inte ansluta utan att vara inloggad. Knappen Fjärrstyr i helpdesken öppnar den via URL-schemat `dg-fjarrsupport-tekniker://` |
 
 Grenen `dg-fjarrsupport` utgår från RustDesk 1.5.0 (taggen `1.5.0`). Dokumentationen om
@@ -18,6 +19,7 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 |---|---|
 | `res/custom-client.json` | Kundklientens inbyggda konfiguration: appnamn, server, relay, publik nyckel, API-server, bara inkommande anslutningar, ingen installation, inga inställningar, ingen adressbok eller inloggning, bara engångslösenord, ingen "Powered by RustDesk" |
 | `res/custom-client-tekniker.json` | Teknikerklientens konfiguration: appnamnet `DG-Fjarrsupport-Tekniker`, samma server, nyckel och API-server, bara utgående anslutningar, dolda serverinställningar och `dg-require-login`. Bygget kopierar den över `res/custom-client.json` |
+| `res/custom-client-server.json` | Serverversionens konfiguration: appnamnet `DG-Fjarrsupport-Server`, bara inkommande anslutningar, bara fast lösenord utan godkännande, låsta inställningar (men lösenord via kommandoraden), fast ID och enhetsgruppen `Servrar`, som helpdesken känner igen |
 | `src/common.rs` | `load_builtin_custom_client()` läser konfigurationen ovan på samma sätt som RustDesk läser en signerad `custom.txt` |
 | `flutter/lib/common/widgets/dg_login_gate.dart`, `flutter/lib/utils/multi_window_manager.dart` | När `dg-require-login` är satt öppnar varje ny anslutning (från appen eller via URL-schemat) först inloggningen, och anslutningen avbryts om teknikern inte loggar in |
 | `flutter/assets/logo.png`, `logo_dark.png` | Loggan DG Fjärrsupport i appens fönster, för ljust och mörkt tema |
@@ -35,6 +37,20 @@ Namnet med ä syns i loggan och i filinformationen.
 `v1.5.0-dg2` döljs den med `hide-powered-by-me` under `override-settings`. Inställningen måste
 ligga där och inte på översta nivån, eftersom fönstret läser den bland de inbyggda
 inställningarna.
+
+## Serverversionen
+
+Installera och sätt lösenordet som administratör:
+
+```
+DG-Fjarrsupport-Server.exe --silent-install
+"C:\Program Files\DG-Fjarrsupport-Server\DG-Fjarrsupport-Server.exe" --password <lösenord>
+"C:\Program Files\DG-Fjarrsupport-Server\DG-Fjarrsupport-Server.exe" --get-id
+```
+
+Lösenordet skapas i helpdesken, som sparar det bland organisationens hemliga uppgifter och
+skickar det till de inloggade teknikernas adressbok "Servrar". Det byggs aldrig in i programmet,
+eftersom det här repot är publikt. Utan lösenord kan ingen ansluta.
 
 ## Bygga
 
