@@ -3,19 +3,13 @@
 # Konfigurationen (server, nyckel, API, appnamn) ligger i res/custom-client.json.
 name: DG Fjärrsupport
 
-# En push till grenen ger en artefakt. En tagg som v1.5.0-dg1 ger också en release.
+# Varje push till grenen bygger exe-filen som artefakt. Är versionen i res/dg-version ny,
+# det vill säga taggen v<version> finns inte, publiceras den också som release.
 on:
   workflow_dispatch:
-    inputs:
-      release:
-        description: "Publicera som release med den här taggen, till exempel v1.5.0-dg1. Tomt = bara artefakt."
-        type: string
-        default: ""
   push:
     branches:
       - dg-fjarrsupport
-    tags:
-      - "v*-dg*"
     paths-ignore:
       - "**.md"
       - "docs/**"
@@ -156,14 +150,29 @@ jobs:
           name: dg-fjarrsupport-windows-x64
           path: ./output/${{ env.OUTPUT_EXE }}
 
+      - name: Check release version
+        id: version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$(tr -d '[:space:]' < res/dg-version)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release $tag finns redan, publicerar inte."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish release
-        if: ${{ inputs.release != '' || startsWith(github.ref, 'refs/tags/') }}
+        if: ${{ steps.version.outputs.publish == 'true' }}
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
-          tag_name: ${{ inputs.release || github.ref_name }}
-          name: DG Fjärrsupport ${{ inputs.release || github.ref_name }}
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: DG Fjärrsupport ${{ steps.version.outputs.tag }}
           target_commitish: ${{ github.sha }}
           body: |
             DG Fjärrsupport för Windows, byggd från RustDesk 1.5.0 med DG Gruppens inställningar.
-            Källkoden för den här versionen finns i taggen ${{ inputs.release || github.ref_name }}.
+            Källkoden för den här versionen finns i taggen ${{ steps.version.outputs.tag }}.
           files: ./output/${{ env.OUTPUT_EXE }}

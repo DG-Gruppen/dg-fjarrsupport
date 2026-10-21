@@ -17,7 +17,7 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 | `flutter/assets/logo.png`, `logo_dark.png` | Loggan DG Fjärrsupport i appens fönster, för ljust och mörkt tema |
 | `flutter/assets/icon.*`, `res/icon.ico`, `res/tray-icon.ico`, `flutter/windows/runner/resources/app_icon.ico` | DG-ikonen |
 | `flutter/windows/runner/Runner.rc`, `libs/portable/Cargo.toml` | Namn och utgivare i Windows filinformation |
-| `.github/workflows/dg-fjarrsupport.yml` | Bygger `DG-Fjarrsupport.exe` för Windows x64 |
+| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger `DG-Fjarrsupport.exe` för Windows x64 och publicerar den som release när versionen är ny |
 | `.github/workflows/` | RustDesks egna byggen som startar automatiskt är borttagna i den här grenen |
 
 Appnamnet är `DG-Fjarrsupport` utan mellanslag och å, ä, ö. RustDesk använder appnamnet i
@@ -29,8 +29,10 @@ namnet med ä i loggan och i filinformationen.
 ## Bygga
 
 Flödet **DG Fjärrsupport** under Actions bygger vid varje push till grenen och kan också köras
-med Run workflow. Resultatet blir en artefakt. En tagg som `v1.5.0-dg1`, pushad eller angiven
-i Run workflow, publicerar dessutom en release med filen `DG-Fjarrsupport.exe`. Den senaste releasen kan alltid laddas ner från:
+med Run workflow. Resultatet blir en artefakt. Versionen står i `res/dg-version`, till exempel
+`1.5.0-dg1`. Finns ingen release med taggen `v1.5.0-dg1` än publiceras bygget som en release med
+filen `DG-Fjarrsupport.exe`. Höj alltså versionen när en ny version ska ut till kunderna.
+Den senaste releasen kan alltid laddas ner från:
 
 ```
 https://github.com/DG-Gruppen/dg-fjarrsupport/releases/latest/download/DG-Fjarrsupport.exe
