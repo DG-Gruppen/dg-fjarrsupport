@@ -19,6 +19,8 @@ on:
 
 permissions:
   contents: write
+  # Inloggning i Azure med OIDC för kodsigneringen (Azure Artifact Signing).
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -161,6 +163,30 @@ jobs:
           mv ./flutter/build/windows/x64/runner/Release ./rustdesk
           mv ./rustdesk/rustdesk.exe ./rustdesk/${{ matrix.variant.app-exe }}
 
+      # Kodsignering med Azure Artifact Signing. Stegen körs bara när repots variabler
+      # (Settings → Secrets and variables → Actions → Variables) är satta, se DG-FJARRSUPPORT.md.
+      - name: Azure login for signing
+        if: ${{ vars.ARTIFACT_SIGNING_ENDPOINT != '' }}
+        uses: azure/login@053f7285eb20bf5469ef084617b0b24d3cec53fc # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Sign application files
+        if: ${{ vars.ARTIFACT_SIGNING_ENDPOINT != '' }}
+        uses: azure/artifact-signing-action@208f8af4bf26cf2af8597424e3cb5582801523ba # v2.0.0
+        with:
+          endpoint: ${{ vars.ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.ARTIFACT_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.ARTIFACT_SIGNING_PROFILE }}
+          files-folder: ${{ github.workspace }}\rustdesk
+          files-folder-filter: exe,dll
+          files-folder-recurse: true
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
       - name: find Runner.res
         continue-on-error: true
         shell: bash
@@ -180,7 +206,22 @@ jobs:
           popd
           mkdir -p ./output
           mv ./target/release/rustdesk-portable-packer.exe ./output/${{ matrix.variant.output }}
-          sha256sum ./output/${{ matrix.variant.output }}
+
+      - name: Sign self-extracted executable
+        if: ${{ vars.ARTIFACT_SIGNING_ENDPOINT != '' }}
+        uses: azure/artifact-signing-action@208f8af4bf26cf2af8597424e3cb5582801523ba # v2.0.0
+        with:
+          endpoint: ${{ vars.ARTIFACT_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.ARTIFACT_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.ARTIFACT_SIGNING_PROFILE }}
+          files: ${{ github.workspace }}\output\${{ matrix.variant.output }}
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Checksum
+        shell: bash
+        run: sha256sum ./output/${{ matrix.variant.output }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -66,8 +66,27 @@ https://github.com/DG-Gruppen/dg-fjarrsupport/releases/latest/download/DG-Fjarrs
 
 Bygget tar ungefär en timme första gången och går fortare när cachen finns.
 
-Filen är inte signerad ännu. Windows visar då "Windows skyddade datorn", och kunden får klicka
-på Mer information → Kör ändå. Signeringen läggs till i flödet när certifikatet finns.
+### Kodsignering för Windows
+
+Flödet signerar exe- och dll-filerna och den färdiga exe-filen med Azure Artifact Signing så
+fort de här variablerna finns under Settings → Secrets and variables → Actions → **Variables**
+(inte Secrets, inget av värdena är hemligt):
+
+| Variabel | Värde |
+|---|---|
+| `AZURE_TENANT_ID` | Katalog-ID (tenant) i Microsoft Entra |
+| `AZURE_CLIENT_ID` | Program-ID för appregistreringen som signerar |
+| `AZURE_SUBSCRIPTION_ID` | Prenumerationen där Artifact Signing-kontot ligger |
+| `ARTIFACT_SIGNING_ENDPOINT` | Kontots endpoint, till exempel `https://neu.codesigning.azure.net/` |
+| `ARTIFACT_SIGNING_ACCOUNT` | Artifact Signing-kontots namn |
+| `ARTIFACT_SIGNING_PROFILE` | Certifikatprofilens namn |
+
+Inloggningen sker med OIDC: appregistreringen har en federerad autentiseringsuppgift för
+GitHub (organisation `DG-Gruppen`, repo `dg-fjarrsupport`, gren `dg-fjarrsupport`) och rollen
+*Artifact Signing Certificate Profile Signer* på kontot. Ingen klienthemlighet behövs.
+
+Utan variablerna byggs filerna osignerade. Windows visar då "Windows skyddade datorn", och
+kunden får klicka på Mer information → Kör ändå.
 
 ## Ny version av RustDesk
 
