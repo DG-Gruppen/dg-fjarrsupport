@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/common.dart';
+import 'package:flutter_hbb/common/widgets/dg_login_gate.dart';
 import 'package:flutter_hbb/main.dart';
 import 'package:flutter_hbb/models/input_model.dart';
 
@@ -231,6 +232,9 @@ class RustDeskMultiWindowManager {
     bool? isSharedPassword,
     String? connToken,
   }) async {
+    if (!await dgEnsureLogin()) {
+      return MultiWindowCallResult(kInvalidWindowId, null);
+    }
     var params = {
       "type": type.index,
       "id": remoteId,

@@ -1,0 +1,13 @@
+{
+  "app-name": "DG-Fjarrsupport-Tekniker",
+  "conn-type": "outgoing",
+  "override-settings": {
+    "custom-rendezvous-server": "rustdesk.dggruppen.se",
+    "relay-server": "rustdesk.dggruppen.se",
+    "key": "u8OHqf8xnAMsLfPVkPzBWWFMHHzE0pBvp6Mzf7pOAZ0=",
+    "api-server": "https://helpdesk.dggruppen.se/rustdesk",
+    "hide-powered-by-me": "Y",
+    "hide-server-settings": "Y",
+    "dg-require-login": "Y"
+  }
+}

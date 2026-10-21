@@ -1,9 +1,13 @@
 # DG Fjärrsupport
 
 Det här är DG Gruppens version av [RustDesk](https://github.com/rustdesk/rustdesk). Den heter
-DG Fjärrsupport och används när DG:s tekniker hjälper kunder via fjärrstyrning. Kunden laddar ner
-`DG-Fjarrsupport.exe` från kundportalen (`https://helpdesk.dggruppen.se/portal/fjarrsupport`),
-startar den och läser upp ID och lösenord för teknikern. Ingenting installeras.
+DG Fjärrsupport och används när DG:s tekniker hjälper kunder via fjärrstyrning. Den byggs i två
+varianter:
+
+| Variant | Fil | Vem | Beskrivning |
+|---|---|---|---|
+| Kundklient | `DG-Fjarrsupport.exe` | Kunden | Laddas ner från kundportalen (`https://helpdesk.dggruppen.se/portal/fjarrsupport`). Kunden startar den och läser upp ID och lösenord för teknikern. Ingenting installeras |
+| Teknikerklient | `DG-Fjarrsupport-Tekniker.exe` | DG:s tekniker | Installeras med knappen i appen. Teknikern loggar in med sitt helpdeskkonto och kan inte ansluta utan att vara inloggad. Knappen Fjärrstyr i helpdesken öppnar den via URL-schemat `dg-fjarrsupport-tekniker://` |
 
 Grenen `dg-fjarrsupport` utgår från RustDesk 1.5.0 (taggen `1.5.0`). Dokumentationen om
 servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
@@ -12,28 +16,25 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 
 | Fil | Ändring |
 |---|---|
-| `res/custom-client.json` | Inbyggd konfiguration: appnamn, server, relay, publik nyckel, API-server, bara inkommande anslutningar, ingen installation, inga inställningar, ingen adressbok eller inloggning, bara engångslösenord |
+| `res/custom-client.json` | Kundklientens inbyggda konfiguration: appnamn, server, relay, publik nyckel, API-server, bara inkommande anslutningar, ingen installation, inga inställningar, ingen adressbok eller inloggning, bara engångslösenord, ingen "Powered by RustDesk" |
+| `res/custom-client-tekniker.json` | Teknikerklientens konfiguration: appnamnet `DG-Fjarrsupport-Tekniker`, samma server, nyckel och API-server, bara utgående anslutningar, dolda serverinställningar och `dg-require-login`. Bygget kopierar den över `res/custom-client.json` |
 | `src/common.rs` | `load_builtin_custom_client()` läser konfigurationen ovan på samma sätt som RustDesk läser en signerad `custom.txt` |
+| `flutter/lib/common/widgets/dg_login_gate.dart`, `flutter/lib/utils/multi_window_manager.dart` | När `dg-require-login` är satt öppnar varje ny anslutning (från appen eller via URL-schemat) först inloggningen, och anslutningen avbryts om teknikern inte loggar in |
 | `flutter/assets/logo.png`, `logo_dark.png` | Loggan DG Fjärrsupport i appens fönster, för ljust och mörkt tema |
 | `flutter/assets/icon.*`, `res/icon.ico`, `res/tray-icon.ico`, `flutter/windows/runner/resources/app_icon.ico` | DG-ikonen |
 | `flutter/windows/runner/Runner.rc`, `libs/portable/Cargo.toml` | Namn och utgivare i Windows filinformation |
 | `flutter/macos/Runner/AppIcon.icns` | DG-ikonen för Mac |
-| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger `DG-Fjarrsupport.exe` för Windows x64 och publicerar den som release när versionen är ny. Bygger också `DG-Fjarrsupport-macos-arm64.dmg` och `-x64.dmg` som artefakter, osignerade och med appen `DG-Fjarrsupport.app` |
+| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger båda varianterna. Windows x64 blir `DG-Fjarrsupport.exe` och `DG-Fjarrsupport-Tekniker.exe`, som publiceras som release när versionen är ny. Mac blir dmg-filer för Apple Silicon och Intel, osignerade, som bara artefakter. Mac-appen får eget bundle-id och URL-schema per variant |
 | `.github/workflows/` | RustDesks egna byggen som startar automatiskt är borttagna i den här grenen |
 
-Appnamnet är `DG-Fjarrsupport` utan mellanslag och å, ä, ö. RustDesk använder appnamnet i
-filnamn, processnamn och mappar och kräver `[a-zA-Z0-9-]` vid installation. Kunden ser
-namnet med ä i loggan och i filinformationen.
+Appnamnen är `DG-Fjarrsupport` och `DG-Fjarrsupport-Tekniker` utan mellanslag och å, ä, ö. RustDesk använder appnamnet i
+filnamn, processnamn, mappar och URL-schemat och kräver `[a-zA-Z0-9-]` vid installation.
+Namnet med ä syns i loggan och i filinformationen.
 
-"Powered by RustDesk" visas i fönstret i `v1.5.0-dg1` och i den första Mac-testversionen.
-
-## Planerat till nästa bygge
-
-Gäller nästa bygge av både Windows- och Mac-klienten:
-
-- Ta bort "Powered by RustDesk" ("Drivs av RustDesk") under loggan. Lägg
-  `"hide-powered-by-me": "Y"` under `override-settings` i `res/custom-client.json`, inte på
-  översta nivån, och höj versionen i `res/dg-version` till `1.5.0-dg2`.
+"Powered by RustDesk" visas i fönstret i `v1.5.0-dg1` och i den första Mac-testversionen. Från
+`v1.5.0-dg2` döljs den med `hide-powered-by-me` under `override-settings`. Inställningen måste
+ligga där och inte på översta nivån, eftersom fönstret läser den bland de inbyggda
+inställningarna.
 
 ## Bygga
 
