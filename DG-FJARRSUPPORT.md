@@ -28,9 +28,9 @@ namnet med ä i loggan och i filinformationen.
 
 ## Bygga
 
-Kör flödet **DG Fjärrsupport** under Actions (Run workflow). Utan tagg blir resultatet en
-artefakt. Med en tagg, till exempel `v1.5.0-dg1`, publiceras en release med filen
-`DG-Fjarrsupport.exe`. Den senaste releasen kan alltid laddas ner från:
+Flödet **DG Fjärrsupport** under Actions bygger vid varje push till grenen och kan också köras
+med Run workflow. Resultatet blir en artefakt. En tagg som `v1.5.0-dg1`, pushad eller angiven
+i Run workflow, publicerar dessutom en release med filen `DG-Fjarrsupport.exe`. Den senaste releasen kan alltid laddas ner från:
 
 ```
 https://github.com/DG-Gruppen/dg-fjarrsupport/releases/latest/download/DG-Fjarrsupport.exe
