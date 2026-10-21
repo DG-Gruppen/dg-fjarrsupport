@@ -25,7 +25,15 @@ Appnamnet är `DG-Fjarrsupport` utan mellanslag och å, ä, ö. RustDesk använd
 filnamn, processnamn och mappar och kräver `[a-zA-Z0-9-]` vid installation. Kunden ser
 namnet med ä i loggan och i filinformationen.
 
-"Powered by RustDesk" visas i fönstret.
+"Powered by RustDesk" visas i fönstret i `v1.5.0-dg1` och i den första Mac-testversionen.
+
+## Planerat till nästa bygge
+
+Gäller nästa bygge av både Windows- och Mac-klienten:
+
+- Ta bort "Powered by RustDesk" ("Drivs av RustDesk") under loggan. Lägg
+  `"hide-powered-by-me": "Y"` under `override-settings` i `res/custom-client.json`, inte på
+  översta nivån, och höj versionen i `res/dg-version` till `1.5.0-dg2`.
 
 ## Bygga
 
