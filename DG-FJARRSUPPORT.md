@@ -17,14 +17,14 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 
 | Fil | Ändring |
 |---|---|
-| `res/custom-client.json` | Kundklientens inbyggda konfiguration: appnamn, server, relay, publik nyckel, API-server, bara inkommande anslutningar, ingen installation, inga inställningar, ingen adressbok eller inloggning, bara engångslösenord, ingen "Powered by RustDesk" |
+| `res/custom-client.json` | Kundklientens inbyggda konfiguration: appnamn, server, relay, publik nyckel, API-server, bara inkommande anslutningar, ingen installation, inga inställningar, ingen adressbok eller inloggning, bara engångslösenord, ingen "Powered by RustDesk", och `dg-scam-warning` som visar varningen mot bedragare i fönstret (`flutter/lib/desktop/pages/desktop_home_page.dart`, från `1.5.0-dg6`) |
 | `res/custom-client-tekniker.json` | Teknikerklientens konfiguration: appnamnet `DG-Fjarrsupport-Tekniker`, samma server, nyckel och API-server, bara utgående anslutningar, dolda serverinställningar och `dg-require-login`. Bygget kopierar den över `res/custom-client.json` |
 | `res/custom-client-server.json` | Serverversionens konfiguration: appnamnet `DG-Fjarrsupport-Server`, bara inkommande anslutningar, bara fast lösenord utan godkännande, låsta inställningar (men lösenord via kommandoraden), fast ID och enhetsgruppen `Servrar`, som helpdesken känner igen |
 | `src/common.rs` | `load_builtin_custom_client()` läser konfigurationen ovan på samma sätt som RustDesk läser en signerad `custom.txt` |
 | `src/common.rs`, `src/ui_session_interface.rs` | `rendezvous_token()`: från `v1.5.0-dg4` skickas teknikerns inloggningstoken inte till ID-servern. Den officiella hbbs saknar nyckelutbytet som en token får klienten att vänta på, så en inloggad tekniker fick "Failed to secure tcp: deadline has elapsed" vid varje anslutning. hbbs läser aldrig token; API-servern får den som förut |
 | `src/common.rs`, `src/hbbs_http/sync.rs` | `dg_version()`: sysinfo skickar också `dg-version` (till exempel `1.5.0-dg4`) från `res/dg-version`, så att helpdesken ser vilken DG-version datorn kör. `version` är fortfarande RustDesks version, som datorerna jämför sinsemellan |
 | `src/hbbs_http/sync.rs` | Från `1.5.0-dg5`: heartbeat skickar `dg-password` (om datorn har ett fast lösenord), och på svaret `dg-password: true` hämtar `fetch_dg_password` serverns lösenord från helpdesken (`POST /api/dg/server-password` med `id` och `uuid`) och sätter det i tjänsten. Se Serverversionen nedan |
-| `flutter/lib/common/widgets/dg_login_gate.dart`, `flutter/lib/utils/multi_window_manager.dart` | När `dg-require-login` är satt öppnar varje ny anslutning (från appen eller via URL-schemat) först inloggningen, och anslutningen avbryts om teknikern inte loggar in |
+| `flutter/lib/common/widgets/dg_login_gate.dart`, `flutter/lib/utils/multi_window_manager.dart` | När `dg-require-login` är satt öppnar varje ny anslutning (från appen eller via URL-schemat) först inloggningen, och anslutningen avbryts om teknikern inte loggar in. Från `1.5.0-dg6` hämtar `dgSharedPassword` dessutom de delade adressböckerna på nytt före varje anslutning och använder lösenordet därifrån, så att Fjärrstyr från helpdesken fungerar mot servrar och ett nyss bytt lösenord gäller direkt |
 | `flutter/assets/logo.png`, `logo_dark.png` | Loggan DG Fjärrsupport i appens fönster, för ljust och mörkt tema |
 | `flutter/assets/icon.*`, `res/icon.ico`, `res/tray-icon.ico`, `flutter/windows/runner/resources/app_icon.ico` | DG-ikonen |
 | `flutter/windows/runner/Runner.rc`, `libs/portable/Cargo.toml` | Namn och utgivare i Windows filinformation |
@@ -57,7 +57,10 @@ det till de inloggade teknikernas adressbok "Servrar". Servern hämtar lösenord
 `dg-password: true` när servern ska hämta, och servern anropar `POST /api/dg/server-password`
 med `id` och `uuid` och sätter lösenordet i tjänsten (`fetch_dg_password` i
 `src/hbbs_http/sync.rs`). Samma sak händer när lösenordet byts i helpdesken och när en
-ominstallerad server saknar lösenord. Helpdesken lämnar bara ut lösenordet till en kopplad
+ominstallerad server saknar lösenord. Helpdesken byter lösenordet efter varje session: det nya
+väntar tills servern hämtat det, och adressboken Servrar byter i samma stund. Teknikerklienten
+hämtar adressböckerna på nytt före varje anslutning (`dgSharedPassword`, från `1.5.0-dg6`).
+Helpdesken lämnar bara ut lösenordet till en kopplad
 server med den uuid som registrerades i sysinfo. Teknikern ansluter via adressboken utan att se
 det. Lösenordet byggs aldrig in i programmet, eftersom det här repot är publikt, och utan
 lösenord kan ingen ansluta.
