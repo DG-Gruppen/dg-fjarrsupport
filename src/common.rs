@@ -2593,6 +2593,22 @@ fn load_builtin_custom_client() {
     }
 }
 
+// DG Fjärrsupport runs the open-source hbbs, which ignores the login token and has no key
+// exchange. A token makes the client wait for that exchange before the punch hole, so a
+// logged-in technician got "Failed to secure tcp: deadline has elapsed". The token still
+// reaches the API server, which reads it from the config, not from here.
+pub fn rendezvous_token() -> String {
+    String::new()
+}
+
+const DG_VERSION: &str = include_str!("../res/dg-version");
+
+// The full DG version (e.g. 1.5.0-dg4) for the helpdesk; `crate::VERSION` stays the RustDesk
+// version, since peers compare it to decide what the other side supports.
+pub fn dg_version() -> &'static str {
+    DG_VERSION.trim()
+}
+
 #[inline]
 pub fn is_empty_uni_link(arg: &str) -> bool {
     let prefix = crate::get_uri_prefix();
