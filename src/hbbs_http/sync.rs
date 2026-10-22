@@ -243,6 +243,9 @@ async fn start_hbbs_sync_async() {
                 }
                 let modified_at = LocalConfig::get_option("strategy_timestamp").parse::<i64>().unwrap_or(0);
                 v["modified_at"] = json!(modified_at);
+                // DG: säger om datorn har ett fast lösenord, så att helpdesken kan be
+                // serverversionen hämta sitt när det saknas eller har bytts i helpdesken.
+                v["dg-password"] = json!(Config::has_local_permanent_password());
                 let response = crate::post_request(url.clone(), v.to_string(), "").await;
                 if let Err(err) = &response {
                     hbb_common::throttled_log!(API_LOG_INTERVAL, warn, "Heartbeat failed: {err:?}");
@@ -272,9 +275,57 @@ async fn start_hbbs_sync_async() {
                                 handle_config_options(strategy.config_options);
                             }
                         }
+                        // DG: helpdesken ber serverversionen hämta sitt fasta lösenord.
+                        if rsp.remove("dg-password").is_some() {
+                            fetch_dg_password(&url, &id).await;
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+/// DG: hämtar det fasta lösenordet från helpdesken och sätter det i tjänsten,
+/// så att ingen behöver köra `--password` på servern. Helpdesken lämnar bara
+/// ut lösenordet till en server som en administratör har kopplat till en
+/// organisation, och bara med den uuid som registrerades i sysinfo.
+async fn fetch_dg_password(heartbeat_url: &str, id: &str) {
+    let mut v = Value::default();
+    v["id"] = json!(id);
+    v["uuid"] = json!(crate::encode64(hbb_common::get_uuid()));
+    let url = heartbeat_url.replace("heartbeat", "dg/server-password");
+    match crate::post_request(url, v.to_string(), "").await {
+        Ok(s) => match serde_json::from_str::<HashMap<String, Value>>(&s) {
+            Ok(rsp) => {
+                if let Some(password) = rsp.get("password").and_then(|p| p.as_str()) {
+                    if password.is_empty() {
+                        log::warn!("Helpdesk sent an empty server password");
+                    } else if Config::set_permanent_password(password) {
+                        log::info!("Server password fetched from helpdesk");
+                    } else {
+                        log::warn!("Server password from helpdesk was rejected");
+                    }
+                } else {
+                    let err = rsp
+                        .get("error")
+                        .and_then(|e| e.as_str())
+                        .unwrap_or("no password in response");
+                    hbb_common::throttled_log!(
+                        API_LOG_INTERVAL,
+                        warn,
+                        "Fetching server password failed: {err}"
+                    );
+                }
+            }
+            Err(err) => log::warn!("Fetching server password: bad response: {err}"),
+        },
+        Err(err) => {
+            hbb_common::throttled_log!(
+                API_LOG_INTERVAL,
+                warn,
+                "Fetching server password failed: {err:?}"
+            );
         }
     }
 }
