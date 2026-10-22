@@ -202,6 +202,9 @@ jobs:
 
   release:
     needs: [windows, macos]
+    # Windows räcker för en release. GitHubs Apple Silicon-maskiner räcker ibland inte till
+    # (dg4: jobben avbröts utan att få en maskin), och då tas Mac-filerna från förra releasen.
+    if: ${{ !cancelled() && needs.windows.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
@@ -231,11 +234,24 @@ jobs:
 
       - name: Download Mac builds
         if: ${{ steps.version.outputs.publish == 'true' }}
+        continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: dg-fjarrsupport-*-macos-*
           path: ./output
           merge-multiple: true
+
+      - name: Carry over missing Mac builds
+        if: ${{ steps.version.outputs.publish == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for f in DG-Fjarrsupport-macos-arm64.dmg DG-Fjarrsupport-macos-x64.dmg DG-Fjarrsupport-Tekniker-macos-arm64.dmg DG-Fjarrsupport-Tekniker-macos-x64.dmg; do
+            if [ ! -f "./output/$f" ]; then
+              echo "::warning::$f byggdes inte, tar den från förra releasen"
+              gh release download --repo "$GITHUB_REPOSITORY" --pattern "$f" --dir ./output
+            fi
+          done
 
       - name: Publish release
         if: ${{ steps.version.outputs.publish == 'true' }}
