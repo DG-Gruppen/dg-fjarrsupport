@@ -8,6 +8,7 @@
     "api-server": "https://helpdesk.dggruppen.se/rustdesk",
     "hide-powered-by-me": "Y",
     "hide-server-settings": "Y",
-    "dg-require-login": "Y"
+    "dg-require-login": "Y",
+    "dg-no-register": "Y"
   }
 }

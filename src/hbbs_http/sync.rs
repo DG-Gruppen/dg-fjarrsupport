@@ -331,6 +331,12 @@ async fn fetch_dg_password(heartbeat_url: &str, id: &str) {
 }
 
 fn heartbeat_url() -> String {
+    // DG: teknikerklienten registrerar sig inte som dator i helpdesken, så den
+    // skickar varken sysinfo eller heartbeat. Inloggning och adressbok går som
+    // vanligt via API-servern.
+    if get_builtin_option("dg-no-register") == "Y" {
+        return "".to_owned();
+    }
     let url = crate::common::get_api_server(
         Config::get_option("api-server"),
         Config::get_option("custom-rendezvous-server"),
