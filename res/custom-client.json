@@ -11,6 +11,7 @@
     "key": "u8OHqf8xnAMsLfPVkPzBWWFMHHzE0pBvp6Mzf7pOAZ0=",
     "api-server": "https://helpdesk.dggruppen.se/rustdesk",
     "verification-method": "use-temporary-password",
-    "hide-powered-by-me": "Y"
+    "hide-powered-by-me": "Y",
+    "dg-scam-warning": "Y"
   }
 }

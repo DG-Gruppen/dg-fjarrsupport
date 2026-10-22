@@ -457,6 +457,17 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     if (systemError.isNotEmpty) {
       return buildInstallCard("", systemError, "", () {});
     }
+    // DG Fjärrsupport: the customer client warns against remote access scams, the
+    // way RustDesk does on its download page.
+    if (bind.mainGetBuildinOption(key: 'dg-scam-warning') == 'Y' &&
+        !isCardClosed) {
+      return buildInstallCard(
+          "Har någon du inte känner ringt dig?",
+          "Om någon du inte känner har bett dig ladda ner det här programmet: lägg på och stäng programmet. DG Gruppen ringer aldrig oväntat och ber om att få styra din dator. Lämna bara ut ID och lösenord till en tekniker du själv har kontakt med.",
+          "",
+          () {},
+          closeButton: true);
+    }
 
     if (isWindows && !bind.isDisableInstallation()) {
       if (!bind.mainIsInstalled()) {

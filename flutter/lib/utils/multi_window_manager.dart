@@ -235,6 +235,13 @@ class RustDeskMultiWindowManager {
     if (!await dgEnsureLogin()) {
       return MultiWindowCallResult(kInvalidWindowId, null);
     }
+    // DG: the current password from the shared address books wins over whatever
+    // the caller had, since the helpdesk may have changed it since the last pull.
+    final sharedPassword = await dgSharedPassword(remoteId);
+    if (sharedPassword != null) {
+      password = sharedPassword;
+      isSharedPassword = true;
+    }
     var params = {
       "type": type.index,
       "id": remoteId,
