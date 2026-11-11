@@ -29,8 +29,8 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 | `flutter/assets/icon.*`, `res/icon.ico`, `res/tray-icon.ico`, `flutter/windows/runner/resources/app_icon.ico` | DG-ikonen |
 | `flutter/windows/runner/Runner.rc`, `libs/portable/Cargo.toml` | Namn och utgivare i Windows filinformation |
 | `flutter/macos/Runner/AppIcon.icns` | DG-ikonen för Mac |
-| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger båda varianterna. Windows x64 blir `DG-Fjarrsupport.exe` och `DG-Fjarrsupport-Tekniker.exe`, som publiceras som release när versionen är ny. Mac blir dmg-filer för Apple Silicon och Intel, osignerade (ad hoc), som också ingår i releasen från `v1.5.0-dg3`. Releasen kräver bara Windows-bygget. Saknas en Mac-fil, till exempel för att GitHub inte hade någon ledig Apple Silicon-maskin, tas den från förra releasen. Mac-appen får eget bundle-id och URL-schema per variant |
-| `.github/workflows/dg-fjarrsupport.yml` (Mac-jobbet) | Developer ID-signering och notarisering när hemligheterna `MACOS_P12_BASE64`, `MACOS_P12_PASSWORD`, `APPLE_API_KEY_P8`, `APPLE_API_KEY_ID` och `APPLE_API_ISSUER_ID` finns. Appen signeras med hardened runtime via `.github/scripts/sign-macos-app.sh`, dmg-filen signeras, skickas till Apple med `notarytool` och får godkännandet fäst med `stapler`. Identiteten läses ur certifikatet. Utan hemligheterna signeras appen ad hoc som förut |
+| `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger båda varianterna. Windows x64 blir `DG-Fjarrsupport.exe` och `DG-Fjarrsupport-Tekniker.exe`, som publiceras som release när versionen är ny. Mac blir dmg-filer för Apple Silicon och Intel, som också ingår i releasen från `v1.5.0-dg3`. Releasen kräver bara Windows-bygget. Saknas en Mac-fil, till exempel för att GitHub inte hade någon ledig Apple Silicon-maskin, tas den från förra releasen. Run workflow med `mac_only` bygger då bara Mac-filerna och ersätter dem i releasen för versionen i `res/dg-version`. Mac-appen får eget bundle-id och URL-schema per variant |
+| `.github/workflows/dg-fjarrsupport.yml` (Mac-jobbet) | Developer ID-signering och notarisering när hemligheterna `MACOS_P12_BASE64`, `MACOS_P12_PASSWORD`, `APPLE_API_KEY_P8`, `APPLE_API_KEY_ID` och `APPLE_API_ISSUER_ID` finns. Appen signeras med hardened runtime via `.github/scripts/sign-macos-app.sh`, dmg-filen signeras, skickas till Apple med `notarytool` och får godkännandet fäst med `stapler`. Inskickningen, väntan på Apples svar (upp till två timmar) och `stapler` får nya försök, eftersom GitHubs Mac-maskiner ibland tappar nätet. Identiteten läses ur certifikatet. Utan hemligheterna signeras appen ad hoc som förut |
 | `.github/workflows/` | RustDesks egna byggen som startar automatiskt är borttagna i den här grenen |
 
 Appnamnen är `DG-Fjarrsupport` och `DG-Fjarrsupport-Tekniker` utan mellanslag och å, ä, ö. RustDesk använder appnamnet i
@@ -85,6 +85,10 @@ https://github.com/DG-Gruppen/dg-fjarrsupport/releases/latest/download/DG-Fjarrs
 ```
 
 Bygget tar ungefär en timme första gången och går fortare när cachen finns.
+
+Fick releasen gamla Mac-filer, till exempel för att GitHub inte hade någon ledig Apple
+Silicon-maskin, körs flödet med Run workflow och rutan `mac_only` ikryssad. Då byggs bara
+Mac-filerna, och de som blev klara ersätter filerna i releasen för versionen i `res/dg-version`.
 
 Filen är inte signerad ännu. Windows visar då "Windows skyddade datorn", och kunden får klicka
 på Mer information → Kör ändå. Signeringen läggs till i flödet när certifikatet finns.
