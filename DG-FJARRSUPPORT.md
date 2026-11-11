@@ -30,6 +30,7 @@ servern och helpdesken finns i helpdeskens repo under `docs/rustdesk/`.
 | `flutter/windows/runner/Runner.rc`, `libs/portable/Cargo.toml` | Namn och utgivare i Windows filinformation |
 | `flutter/macos/Runner/AppIcon.icns` | DG-ikonen för Mac |
 | `.github/workflows/dg-fjarrsupport.yml`, `res/dg-version` | Bygger båda varianterna. Windows x64 blir `DG-Fjarrsupport.exe` och `DG-Fjarrsupport-Tekniker.exe`, som publiceras som release när versionen är ny. Mac blir dmg-filer för Apple Silicon och Intel, osignerade (ad hoc), som också ingår i releasen från `v1.5.0-dg3`. Releasen kräver bara Windows-bygget. Saknas en Mac-fil, till exempel för att GitHub inte hade någon ledig Apple Silicon-maskin, tas den från förra releasen. Mac-appen får eget bundle-id och URL-schema per variant |
+| `.github/workflows/dg-fjarrsupport.yml` (Mac-jobbet) | Developer ID-signering och notarisering när hemligheterna `MACOS_P12_BASE64`, `MACOS_P12_PASSWORD`, `APPLE_API_KEY_P8`, `APPLE_API_KEY_ID` och `APPLE_API_ISSUER_ID` finns. Appen signeras med hardened runtime via `.github/scripts/sign-macos-app.sh`, dmg-filen signeras, skickas till Apple med `notarytool` och får godkännandet fäst med `stapler`. Identiteten läses ur certifikatet. Utan hemligheterna signeras appen ad hoc som förut |
 | `.github/workflows/` | RustDesks egna byggen som startar automatiskt är borttagna i den här grenen |
 
 Appnamnen är `DG-Fjarrsupport` och `DG-Fjarrsupport-Tekniker` utan mellanslag och å, ä, ö. RustDesk använder appnamnet i
