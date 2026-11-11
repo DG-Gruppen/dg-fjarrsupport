@@ -348,7 +348,12 @@ jobs:
       - name: Install NASM
         run: |
           # aom and other multimedia libraries require NASM 2.x, not 3.x from brew.
-          wget https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/macosx/nasm-2.16.03-macosx.zip
+          # GitHubs Mac-maskiner tappar ibland DNS mot www.nasm.us (dg8: "unable to resolve host").
+          for i in 1 2 3 4 5; do
+            wget -q https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/macosx/nasm-2.16.03-macosx.zip && break
+            echo "Hämtningen av NASM misslyckades (försök $i av 5)"
+            sleep 20
+          done
           unzip nasm-2.16.03-macosx.zip
           sudo cp nasm-2.16.03/nasm /usr/local/bin/nasm
           nasm --version
@@ -510,7 +515,8 @@ jobs:
           codesign --force --timestamp --sign "$MACOS_IDENTITY" "$dmg"
           key="$RUNNER_TEMP/AuthKey.p8"
           printf '%s\n' "$APPLE_API_KEY_P8" > "$key"
-          result="$(xcrun notarytool submit "$dmg" --key "$key" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID" --wait --timeout 30m --output-format json)"
+          # Apples första notariseringar för ett nytt team tog över 30 minuter (dg8).
+          result="$(xcrun notarytool submit "$dmg" --key "$key" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID" --wait --timeout 2h --output-format json)" || true
           echo "$result"
           status="$(echo "$result" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("status", ""))')"
           if [ "$status" != "Accepted" ]; then
