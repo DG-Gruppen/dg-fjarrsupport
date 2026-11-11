@@ -450,6 +450,9 @@ jobs:
           echo "$MACOS_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
           security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MACOS_P12_PASSWORD" -T /usr/bin/codesign
           rm -f "$RUNNER_TEMP/cert.p12"
+          # En .p12 exporterad ur Nyckelhanteraren saknar Apples mellancertifikat, som behövs för kedjan.
+          curl -fsSL https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer -o "$RUNNER_TEMP/DeveloperIDG2CA.cer"
+          security import "$RUNNER_TEMP/DeveloperIDG2CA.cer" -k "$keychain" || echo "Mellancertifikatet finns redan i nyckelringen"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain"
           keychains=("$keychain")
           while IFS= read -r existing; do
